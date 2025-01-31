@@ -12,7 +12,8 @@ clap = { version = "4.5", features = ["derive"] }
 ocl = "0.19.3"
 rand = "0.8"
 rayon = "1.10"
-
+cc = "1.0"
+  
 [features]
 gpu = []
 
