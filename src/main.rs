@@ -1,8 +1,4 @@
-#[cfg(feature = "gpu")]
-mod gpu;
-
-#[cfg(not(feature = "gpu"))]
-mod cpu;
+// src/main.rs
 
 use clap::Parser;
 use logfather::{Level, Logger};
@@ -13,6 +9,12 @@ use std::{
     time::Instant,
     io::{self, Write},
 };
+
+#[cfg(feature = "gpu")]
+mod gpu;
+
+#[cfg(not(feature = "gpu"))]
+mod cpu;
 
 static EXIT: AtomicBool = AtomicBool::new(false);
 
@@ -36,6 +38,7 @@ fn main() {
     let args = Args::parse();
     validate_target(&args.target);
 
+    // Initialize logging
     let mut logger = Logger::new();
     logger.log_format("[{timestamp} {level}] {message}");
     logger.timestamp_format("%Y-%m-%d %H:%M:%S");
