@@ -1,28 +1,36 @@
 [package]
 name = "solana_vanity"
-version = "0.1.0"
+version = "0.3.4"
 edition = "2021"
-
-[[bin]]
-name = "solana_vanity"
-path = "src/main.rs"
-
-[dependencies]
-clap = { version = "4.5", features = ["derive"] }
-ed25519-dalek = "2.1.1"
-rand = "0.8"
-rayon = "1.10"
-bs58 = { version = "0.5", features = ["check"] }
-num-format = "0.4"
-logfather = "0.2.6"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-
-# Add GPU-related dependencies here
-[dependencies.ocl]
-version = "0.19" # Latest version at the time of writing
-optional = true
+authors = [
+    "Your Name <your_email@example.com>",
+]
+license = "MIT OR Apache-2.0"
+description = "A *bLaZinGlY fAsT* tool for grinding vanity addresses on Solana"
 
 [features]
+gpu = ["ocl", "cc"]
 default = []
-gpu = ["ocl"]
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+
+[dependencies]
+clap = { version = "4.5.7", features = ["derive"] }
+fd_bs58 = "0.1.0"
+logfather = "0.2.6"
+num-format = "0.4.4"
+rand = "0.8.5"
+rayon = "1.10.0"
+sha2 = "0.10.8"
+solana-pubkey = "2.1.0"
+solana-rpc-client = "2.1.0"
+solana-sdk = "2.1.0"
+bs58 = { version = "0.5", features = ["check"] }
+
+# GPU-related dependencies
+ocl = { version = "0.19", optional = true }
+
+[build-dependencies]
+cc = { version = "1.0.98", optional = true }
