@@ -63,7 +63,7 @@ fn grind(args: Args) {
     let total_count_clone = Arc::clone(&total_count);
     let matches_clone = Arc::clone(&matches_found);
     
-    // Live status thread
+    // Live status thread for real-time updates
     std::thread::spawn(move || {
         loop {
             if EXIT.load(Ordering::Acquire) {
