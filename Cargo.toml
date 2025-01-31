@@ -17,3 +17,12 @@ num-format = "0.4"
 logfather = "0.2.6"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+
+# Add GPU-related dependencies here
+[dependencies.ocl]
+version = "0.19" # Latest version at the time of writing
+optional = true
+
+[features]
+default = []
+gpu = ["ocl"]
