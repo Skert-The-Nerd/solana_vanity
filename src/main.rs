@@ -6,9 +6,7 @@ use rand::RngCore;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use std::{
     sync::atomic::{AtomicBool, AtomicU64, Ordering},
-    sync::Arc,
     time::Instant,
-    io::{self, Write},
 };
 
 static EXIT: AtomicBool = AtomicBool::new(false);
@@ -56,35 +54,8 @@ fn main() {
 }
 
 fn grind(args: Args) {
-    let total_count = Arc::new(AtomicU64::new(0));
-    let matches_found = Arc::new(AtomicU64::new(0));
+    let total_count = AtomicU64::new(0);
     let start_time = Instant::now();
-
-    let total_count_clone = Arc::clone(&total_count);
-    let matches_clone = Arc::clone(&matches_found);
-    
-    // Visualization thread
-    std::thread::spawn(move || {
-        loop {
-            if EXIT.load(Ordering::Acquire) {
-                break;
-            }
-            let elapsed = start_time.elapsed().as_secs_f64();
-            let total_checked = total_count_clone.load(Ordering::Relaxed);
-            let cps = if elapsed > 0.0 { total_checked as f64 / elapsed } else { 0.0 };
-            let matches = matches_clone.load(Ordering::Relaxed);
-            
-            print!(
-                "\rChecked: {} | Speed: {:>8.1} CPS | Matches: {}   ",
-                total_checked.to_formatted_string(&Locale::en),
-                cps,
-                matches.to_formatted_string(&Locale::en)
-            );
-            io::stdout().flush().unwrap();
-            
-            std::thread::sleep(std::time::Duration::from_secs(1));
-        }
-    });
 
     (0..args.threads).into_par_iter().for_each(|_| {
         let mut rng = rand::thread_rng();
@@ -97,8 +68,6 @@ fn grind(args: Args) {
 
             // Generate random seed
             rng.fill_bytes(&mut buffer);
-            
-            // Create signing key
             let signing_key = SigningKey::from_bytes(&buffer);
 
             // Get base58 public key
@@ -115,7 +84,6 @@ fn grind(args: Args) {
             // Check for match
             if check_pubkey.starts_with(&args.target) {
                 EXIT.store(true, Ordering::Release);
-                matches_found.fetch_add(1, Ordering::Relaxed);
                 
                 println!("\n\n╔════════════════════════════════════════════════╗");
                 println!("║               MATCH FOUND!               ║");
@@ -124,6 +92,15 @@ fn grind(args: Args) {
                 println!("║ Private Seed: {:27} ║", bs58::encode(buffer).into_string());
                 println!("╚══════════════════════════════════════════╝");
                 return;
+            }
+
+            // Print progress every 1 million checks
+            if total_count.load(Ordering::Relaxed) % 1_000_000 == 0 {
+                let elapsed = start_time.elapsed().as_secs_f64();
+                let cps = total_count.load(Ordering::Relaxed) as f64 / elapsed;
+                println!("Checked: {} | Speed: {:>8.1} CPS", 
+                         total_count.load(Ordering::Relaxed).to_formatted_string(&Locale::en),
+                         cps);
             }
         }
     });
