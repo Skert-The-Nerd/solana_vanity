@@ -1,12 +1,12 @@
 __kernel void vanity_search(
-    __global unsigned char* seeds,      // Input: Random seeds (32 bytes each)
-    __global unsigned char* pubkeys,   // Output: Generated public keys (32 bytes each)
-    __global int* match_found,         // Output: Flag to indicate a match
-    __global int* match_index,         // Output: Index of the matched key
-    __constant char* target,           // Input: Target prefix
+    __global unsigned char* seeds,      // Input: Random seeds
+    __global unsigned char* results,   // Output: Matched public keys
+    __global int* match_found,         // Output: Match flag
+    __global int* match_index,         // Output: Match index
+    __global char* target,             // Input: Target prefix
     const int target_length            // Input: Length of the target prefix
 ) {
-    int gid = get_global_id(0); // Global thread ID (seed index)
+    int gid = get_global_id(0); // Thread ID
 
     // Extract the seed for this thread
     unsigned char seed[32];
@@ -14,19 +14,14 @@ __kernel void vanity_search(
         seed[i] = seeds[gid * 32 + i];
     }
 
-    // Example key generation logic (replace with actual transformation)
+    // Generate a mock public key from the seed (replace with real logic)
     unsigned char pubkey[32];
     for (int i = 0; i < 32; i++) {
-        pubkey[i] = seed[i] ^ 0xA5; // XOR operation as a placeholder
+        pubkey[i] = seed[i] ^ 0xA5;
     }
 
-    // Store the generated public key
-    for (int i = 0; i < 32; i++) {
-        pubkeys[gid * 32 + i] = pubkey[i];
-    }
-
-    // Check if the generated public key matches the target prefix
-    int is_match = 1; // Assume it's a match until proven otherwise
+    // Check if the public key matches the target prefix
+    int is_match = 1;
     for (int i = 0; i < target_length; i++) {
         if (pubkey[i] != (unsigned char)target[i]) {
             is_match = 0;
@@ -34,9 +29,12 @@ __kernel void vanity_search(
         }
     }
 
-    // If a match is found, set the match flag and index
+    // If a match is found, set the flag and store the result
     if (is_match) {
         match_found[0] = 1;
-        match_index[0] = gid; // Store the index of the matching thread
+        match_index[0] = gid;
+        for (int i = 0; i < 32; i++) {
+            results[i] = pubkey[i];
+        }
     }
 }
