@@ -46,13 +46,13 @@ fn main() -> anyhow::Result<()> {
     logger.level(Level::Info);
 
     println!("╔{}╗", "═".repeat(46));
-println!("║{:^46}║", "Solana Vanity Address Finder");
-println!("╠{}╣", "═".repeat(46));
-println!("║ Target: {:36} ║", args.target);
-println!("║ GPUs: {:38} ║", args.gpus);
-println!("║ Batch Size: {:32}M ║", args.batch_size);
-println!("║ Case-sensitive: {:29} ║", !args.case_insensitive);
-println!("╚{}╝", "═".repeat(46));
+    println!("║{:^46}║", "Solana Vanity Address Finder");
+    println!("╠{}╣", "═".repeat(46));
+    println!("║ Target: {:36} ║", args.target);
+    println!("║ GPUs: {:38} ║", args.gpus);
+    println!("║ Batch Size: {:32}M ║", args.batch_size);
+    println!("║ Case-sensitive: {:29} ║", !args.case_insensitive);
+    println!("╚{}╝", "═".repeat(46));
 
     grind(args)
 }
