@@ -14,16 +14,16 @@ pub fn grind(target: String, case_insensitive: bool, num_threads: u32) {
     let seeds = Buffer::<u8>::builder().queue(queue.clone()).len(32 * num_threads).build().unwrap();
     let results = Buffer::<u8>::builder().queue(queue.clone()).len(32).build().unwrap();
     let match_found = Buffer::<i32>::builder().queue(queue.clone()).len(1).build().unwrap();
-    let match_index = Buffer::<i32>::builder().queue(queue.clone()).len(1).build().unwrap();
 
-    // Write the target to a fixed-size buffer
-    let target_buffer = Buffer::<u8>::builder()
-        .queue(queue.clone())
-        .len(target.len())
-        .build()
-        .unwrap();
+    // Fill seeds buffer with random data (example)
+    let mut seed_data = vec![0u8; 32 * num_threads];
+    for byte in seed_data.iter_mut() {
+        *byte = rand::random::<u8>();
+    }
+    queue.write(&seeds, 0, &seed_data).enq().unwrap();
 
-    queue.write(&target_buffer, 0, target.as_bytes()).enq().unwrap();
+    // Initialize match_found buffer
+    queue.write(&match_found, 0, &[0]).enq().unwrap();
 
     // Kernel
     let kernel = Kernel::builder()
@@ -34,9 +34,6 @@ pub fn grind(target: String, case_insensitive: bool, num_threads: u32) {
         .arg(&seeds)          // First argument: seeds
         .arg(&results)        // Second argument: results
         .arg(&match_found)    // Third argument: match_found
-        .arg(&match_index)    // Fourth argument: match_index
-        .arg(&target_buffer)  // Fifth argument: target (prefix)
-        .arg(target.len() as i32) // Sixth argument: target length
         .build()
         .unwrap();
 
@@ -45,7 +42,7 @@ pub fn grind(target: String, case_insensitive: bool, num_threads: u32) {
         kernel.enq().unwrap();
     }
 
-    // Read the results back
+    // Read results
     let mut found = vec![0; 1];
     let mut matched_key = vec![0; 32];
     queue.read(&match_found, &mut found).enq().unwrap();
