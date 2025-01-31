@@ -1,7 +1,7 @@
 __kernel void vanity_search(
     __global unsigned char* seeds,      // Input: Random seeds (32 bytes each)
-    __global unsigned char* results,   // Output: Matched public keys
-    __global int* match_found          // Output: Match flag
+    __global unsigned char* results,    // Output: Matched public keys
+    __global int* match_found           // Output: Match flag
 ) {
     int gid = get_global_id(0); // Global thread ID (seed index)
 
@@ -11,18 +11,17 @@ __kernel void vanity_search(
         seed[i] = seeds[gid * 32 + i];
     }
 
-    // Example key generation logic (replace with real cryptographic transformation)
+    // Example key generation logic (replace with actual Ed25519 logic)
     unsigned char pubkey[32];
     for (int i = 0; i < 32; i++) {
-        pubkey[i] = seed[i] ^ 0xA5; // Example XOR transformation
+        pubkey[i] = seed[i] ^ 0xA5; // Simple XOR transformation
     }
 
-    // Check if the public key matches some condition (e.g., a prefix match)
-    // In real use, this would involve cryptographic and target-matching logic
-    if (pubkey[0] == 0x42) { // Example condition
-        match_found[0] = 1; // Signal match found
+    // Check if the public key matches the prefix (mock match condition)
+    if (pubkey[0] == 0x42) { // Example check, replace with real match logic
+        match_found[0] = 1;
         for (int i = 0; i < 32; i++) {
-            results[i] = pubkey[i]; // Store matching public key
+            results[i] = pubkey[i]; // Store the matched public key
         }
     }
 }
