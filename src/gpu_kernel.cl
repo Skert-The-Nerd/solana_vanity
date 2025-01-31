@@ -1,27 +1,27 @@
 __kernel void vanity_search(
-    __global unsigned char* seeds,      // Input: Random seeds (32 bytes each)
+    __global unsigned char* seeds,      // Input: Random seeds
     __global unsigned char* results,    // Output: Matched public keys
     __global int* match_found           // Output: Match flag
 ) {
-    int gid = get_global_id(0); // Global thread ID (seed index)
+    int gid = get_global_id(0); // Thread ID
 
-    // Extract the seed for this thread
+    // Extract seed for this thread
     unsigned char seed[32];
     for (int i = 0; i < 32; i++) {
         seed[i] = seeds[gid * 32 + i];
     }
 
-    // Example key generation logic (replace with actual Ed25519 logic)
+    // Mock public key generation (replace with real Ed25519 logic)
     unsigned char pubkey[32];
     for (int i = 0; i < 32; i++) {
-        pubkey[i] = seed[i] ^ 0xA5; // Simple XOR transformation
+        pubkey[i] = seed[i] ^ 0xA5;
     }
 
-    // Check if the public key matches the prefix (mock match condition)
-    if (pubkey[0] == 0x42) { // Example check, replace with real match logic
+    // Match condition (replace with actual prefix check)
+    if (pubkey[0] == 0x42) {
         match_found[0] = 1;
         for (int i = 0; i < 32; i++) {
-            results[i] = pubkey[i]; // Store the matched public key
+            results[i] = pubkey[i];
         }
     }
 }
