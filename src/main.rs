@@ -1,3 +1,9 @@
+#[cfg(feature = "gpu")]
+mod gpu;
+
+#[cfg(not(feature = "gpu"))]
+mod cpu;
+
 use clap::Parser;
 use logfather::{Level, Logger};
 use num_format::{Locale, ToFormattedString};
@@ -7,14 +13,6 @@ use std::{
     time::Instant,
     io::{self, Write},
 };
-
-#[cfg(feature = "gpu")]
-mod gpu;
-
-#[cfg(not(feature = "gpu"))]
-mod cpu;
-
-use std::env;
 
 static EXIT: AtomicBool = AtomicBool::new(false);
 
