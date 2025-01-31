@@ -15,8 +15,7 @@ use std::{
 };
 
 static EXIT: AtomicBool = AtomicBool::new(false);
-#[cfg(feature = "cuda")]
-use rust_gpu_tools::{Device, Framework, Program};
+
 #[derive(Debug, Parser)]
 #[command(name = "Solana Vanity Address Generator")]
 struct Args {
