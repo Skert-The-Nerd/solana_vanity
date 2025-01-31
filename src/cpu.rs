@@ -31,7 +31,7 @@ pub fn grind(target: String, case_insensitive: bool, num_threads: u32) {
             rng.fill_bytes(&mut buffer);
             
             // Create signing key directly
-            let signing_key = SigningKey::from_bytes(&buffer);
+            let signing_key = SigningKey::from_bytes(&buffer).unwrap();
 
             // Get verifying key (public key)
             let verifying_key = signing_key.verifying_key();
