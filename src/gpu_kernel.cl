@@ -1,34 +1,42 @@
-// src/gpu_kernel.cl
-
 __kernel void vanity_search(
-    __global unsigned char* seeds,      // Input: Random seeds (32 bytes per thread)
-    __global unsigned char* results,    // Output: Matched public keys (32 bytes)
-    __global int* match_found,          // Output: Flag to indicate a match
-    __constant char* target,            // Input: Target prefix
-    const int target_length             // Input: Length of the target prefix
+    __global unsigned char* seeds,      // Input: Random seeds (32 bytes each)
+    __global unsigned char* pubkeys,   // Output: Generated public keys (32 bytes each)
+    __global int* match_found,         // Output: Flag to indicate a match
+    __global int* match_index,         // Output: Index of the matched key
+    __constant char* target,           // Input: Target prefix
+    const int target_length            // Input: Length of the target prefix
 ) {
-    int gid = get_global_id(0); // Get the global thread ID
+    int gid = get_global_id(0); // Global thread ID (seed index)
 
-    // Placeholder: Generate mock public key using seed
-    unsigned char pubkey[32];
+    // Extract the seed for this thread
+    unsigned char seed[32];
     for (int i = 0; i < 32; i++) {
-        pubkey[i] = seeds[gid * 32 + i] ^ 0x5A; // Example XOR transformation (mock key generation)
+        seed[i] = seeds[gid * 32 + i];
     }
 
-    // Compare the beginning of the public key to the target prefix
-    bool is_match = true;
+    // Example key generation logic (replace with actual transformation)
+    unsigned char pubkey[32];
+    for (int i = 0; i < 32; i++) {
+        pubkey[i] = seed[i] ^ 0xA5; // XOR operation as a placeholder
+    }
+
+    // Store the generated public key
+    for (int i = 0; i < 32; i++) {
+        pubkeys[gid * 32 + i] = pubkey[i];
+    }
+
+    // Check if the generated public key matches the target prefix
+    int is_match = 1; // Assume it's a match until proven otherwise
     for (int i = 0; i < target_length; i++) {
         if (pubkey[i] != (unsigned char)target[i]) {
-            is_match = false;
+            is_match = 0;
             break;
         }
     }
 
-    // If a match is found, store the result and signal completion
+    // If a match is found, set the match flag and index
     if (is_match) {
-        for (int i = 0; i < 32; i++) {
-            results[i] = pubkey[i]; // Store the matched public key
-        }
-        match_found[0] = 1; // Set the match flag
+        match_found[0] = 1;
+        match_index[0] = gid; // Store the index of the matching thread
     }
 }
