@@ -12,7 +12,7 @@ rayon = "1.10"
 bs58 = "0.4"
 num-format = "0.4"
 logfather = "0.2.6"
-rust-gpu-tools = { version = "0.8", features = ["cuda"] }
+rust-gpu-tools = { version = "0.7", features = ["cuda"] }  # Use available version
 indicatif = "0.17.7"
 anyhow = "1.0"
 
