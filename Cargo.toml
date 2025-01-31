@@ -1,28 +1,18 @@
-[package]
-name = "solana_vanity"
-version = "0.1.0"
-edition = "2021"
-
-[[bin]]
-name = "solana_vanity"
-path = "src/main.rs"
-
 [dependencies]
-clap = { version = "4.5", features = ["derive"] }
-ocl = "0.19.3"
-rand = "0.8"
-rayon = "1.10"
-cc = "1.0"
+clap = { version = "4.5.7", features = ["derive"] }
+fd_bs58 = "0.1.0"
+logfather = "0.2.6"
+num-format = "0.4.4"
+rand = "0.8.5"
+rayon = "1.10.0"
+sha2 = "0.10.8"
+solana-pubkey = "2.1.0"
+solana-rpc-client = "2.1.0"
+solana-sdk = "2.1.0"
 
 [dependencies.ocl]
 version = "0.19" # Use the latest compatible version
 optional = true
 
-[features]
-[features]
-default = []
-gpu = ["ocl"] # Assuming you use the 'ocl' crate for OpenCL support
-
-[profile.release]
-lto = "fat"
-codegen-units = 1
+[build-dependencies]
+cc = { version = "1.0.98", optional = true }
