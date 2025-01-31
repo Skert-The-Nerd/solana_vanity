@@ -45,14 +45,14 @@ fn main() -> anyhow::Result<()> {
     logger.timestamp_format("%Y-%m-%d %H:%M:%S");
     logger.level(Level::Info);
 
-    println!("╔════════════════════════════════════════════════╗");
-    println!("║          Solana Vanity Address Finder          ║");
-    println!("╠════════════════════════════════════════════════╣");
-    println!("║ Target: {:38} ║", args.target);
-    println!("║ GPUs: {:40} ║", args.gpus);
-    println!("║ Batch Size: {:34}M ║", args.batch_size);
-    println!("║ Case-sensitive: {:31} ║", !args.case_insensitive);
-    println!("╚════════════════════════════════════════════════╝\n");
+    println!("╔{}╗", "═".repeat(46));
+println!("║{:^46}║", "Solana Vanity Address Finder");
+println!("╠{}╣", "═".repeat(46));
+println!("║ Target: {:36} ║", args.target);
+println!("║ GPUs: {:38} ║", args.gpus);
+println!("║ Batch Size: {:32}M ║", args.batch_size);
+println!("║ Case-sensitive: {:29} ║", !args.case_insensitive);
+println!("╚{}╝", "═".repeat(46));
 
     grind(args)
 }
@@ -156,12 +156,15 @@ fn check_match(pubkey: &str, target: &str, case_insensitive: bool) -> bool {
 }
 
 fn print_match(pubkey: &str, seed: &[u8]) {
-    println!("\n\n╔════════════════════════════════════════════════╗");
-    println!("║               MATCH FOUND!               ║");
-    println!("╠══════════════════════════════════════════╣");
-    println!("║ Public Address: {:25} ║", pubkey);
-    println!("║ Private Seed: {:27} ║", bs58::encode(seed).into_string());
-    println!("╚══════════════════════════════════════════╝");
+    let seed_str = bs58::encode(seed).into_string();
+    let max_len = pubkey.len().max(seed_str.len()) + 4;
+    
+    println!("\n\n╔{}╗", "═".repeat(max_len + 2));
+    println!("║{:^width$}║", "MATCH FOUND!", width = max_len);
+    println!("╠{}╣", "═".repeat(max_len + 2));
+    println!("║ Public Address: {:<width$}║", pubkey, width = max_len - 18);
+    println!("║ Private Seed: {:<width$}║", seed_str, width = max_len - 16);
+    println!("╚{}╝", "═".repeat(max_len + 2));
 }
 
 fn validate_target(target: &str) -> anyhow::Result<()> {
