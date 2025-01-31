@@ -5,6 +5,7 @@ edition = "2021"
 build = "build.rs"
 
 [features]
+default = []
 cuda = ["rust-gpu-tools/cuda"]
 
 [dependencies]
