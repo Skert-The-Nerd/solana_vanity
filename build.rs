@@ -7,9 +7,6 @@ fn main() {
         println!("cargo:rustc-link-lib=OpenCL");
 
         // If you have custom OpenCL or CUDA code to compile, use the 'cc' crate
-        // Example: Compiling an OpenCL kernel written in C
-        // Uncomment and modify the following lines if you have C/C++ GPU kernels
-
         /*
         cc::Build::new()
             .file("src/gpu_kernel.c") // Path to your GPU kernel C file
