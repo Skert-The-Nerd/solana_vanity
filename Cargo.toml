@@ -1,9 +1,11 @@
 [dependencies]
+clap = { version = "4.5", features = ["derive"] }
 ed25519-dalek = { version = "2.1", features = ["rand_core"] }
 serde_json = "1.0"
-num-format = "0.4"
+rand = "0.8"
 rayon = "1.10"
 bs58 = { version = "0.5", features = ["check"] }
+num-format = "0.4"
 logfather = "0.2.6"
-rand = "0.8"
-clap = { version = "4.5", features = ["derive"] }
+solana-sdk = "2.1"
+solana-rpc-client = "2.1"
