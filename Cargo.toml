@@ -13,9 +13,15 @@ ocl = "0.19.3"
 rand = "0.8"
 rayon = "1.10"
 cc = "1.0"
-  
+
+[dependencies.ocl]
+version = "0.19" # Use the latest compatible version
+optional = true
+
 [features]
-gpu = []
+[features]
+default = []
+gpu = ["ocl"] # Assuming you use the 'ocl' crate for OpenCL support
 
 [profile.release]
 lto = "fat"
