@@ -73,7 +73,34 @@ fn grind(args: Args) {
             let total_checked = total_count_clone.load(Ordering::Relaxed);
             let cps = total_checked as f64 / elapsed;
             let matches = matches_clone.load(Ordering::Relaxed);
-            
+            let total_count = Arc::new(AtomicU64::new(0));
+let matches_found = Arc::new(AtomicU64::new(0));
+let start_time = Instant::now();
+
+let total_count_clone = Arc::clone(&total_count);
+let matches_clone = Arc::clone(&matches_found);
+
+std::thread::spawn(move || {
+    loop {
+        if EXIT.load(Ordering::Acquire) {
+            break;
+        }
+        let elapsed = start_time.elapsed().as_secs_f64();
+        let total_checked = total_count_clone.load(Ordering::Relaxed);
+        let cps = total_checked as f64 / elapsed;
+        let matches = matches_clone.load(Ordering::Relaxed);
+        
+        print!(
+            "\rChecked: {} | Speed: {:>8.1} CPS | Matches: {}   ",
+            total_checked.to_formatted_string(&Locale::en),
+            cps,
+            matches.to_formatted_string(&Locale::en)
+        );
+        io::stdout().flush().unwrap();
+        
+        std::thread::sleep(std::time::Duration::from_secs(1));
+    }
+});
             print!(
                 "\rChecked: {} | Speed: {:>8.1} CPS | Matches: {}   ",
                 total_checked.to_formatted_string(&Locale::en),
