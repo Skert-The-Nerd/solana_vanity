@@ -1,3 +1,5 @@
+// src/main.rs
+
 use clap::Parser;
 use logfather::{Level, Logger};
 use num_format::{Locale, ToFormattedString};
@@ -13,8 +15,6 @@ mod gpu;
 
 #[cfg(not(feature = "gpu"))]
 mod cpu;
-
-use std::env;
 
 static EXIT: AtomicBool = AtomicBool::new(false);
 
@@ -38,6 +38,7 @@ fn main() {
     let args = Args::parse();
     validate_target(&args.target);
 
+    // Initialize logging
     let mut logger = Logger::new();
     logger.log_format("[{timestamp} {level}] {message}");
     logger.timestamp_format("%Y-%m-%d %H:%M:%S");
