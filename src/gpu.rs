@@ -10,7 +10,7 @@ pub fn grind(_target: String, _case_insensitive: bool, num_threads: u32) {
 
     let program = Program::builder().src(kernel_source).build(&context).unwrap();
 
-    // Buffers (Correctly passing all 3 required arguments)
+    // Buffers
     let seeds = Buffer::<u8>::builder().queue(queue.clone()).len(32 * num_threads).build().unwrap();
     let results = Buffer::<u8>::builder().queue(queue.clone()).len(32).build().unwrap();
     let match_found = Buffer::<i32>::builder().queue(queue.clone()).len(1).build().unwrap();
@@ -25,15 +25,15 @@ pub fn grind(_target: String, _case_insensitive: bool, num_threads: u32) {
     // Initialize match_found buffer
     queue.write(&match_found, 0, &[0]).enq().unwrap();
 
-    // Correct Kernel Call
+    // Kernel Execution
     let kernel = Kernel::builder()
         .program(&program)
         .name("vanity_search")
         .queue(queue.clone())
         .global_work_size(num_threads)
-        .arg(&seeds)         // ✅ First argument (seeds)
-        .arg(&results)       // ✅ Second argument (results)
-        .arg(&match_found)   // ✅ Third argument (match_found)
+        .arg(&seeds)         // First argument (seeds)
+        .arg(&results)       // Second argument (results)
+        .arg(&match_found)   // Third argument (match_found)
         .build()
         .unwrap();
 
@@ -42,7 +42,7 @@ pub fn grind(_target: String, _case_insensitive: bool, num_threads: u32) {
         kernel.enq().unwrap();
     }
 
-    // Read match result
+    // Read results
     let mut found = vec![0; 1];
     let mut matched_key = vec![0; 32];
     queue.read(&match_found, &mut found).enq().unwrap();
