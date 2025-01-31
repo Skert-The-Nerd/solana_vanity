@@ -2,7 +2,7 @@ fn main() {
     if cfg!(feature = "cuda") {
         cc::Build::new()
             .cuda(true)
-            .flag("-arch=sm_86") // RTX 3090 specific
+            .flag("-arch=sm_86")
             .file("cuda/kernel.cu")
             .compile("kernel");
         
