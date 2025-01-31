@@ -1,6 +1,5 @@
 fn main() {
-    #[cfg(feature = "cuda")]
-    {
+    if cfg!(feature = "cuda") {
         cc::Build::new()
             .cuda(true)
             .flag("-arch=sm_86") // RTX 3090 specific
