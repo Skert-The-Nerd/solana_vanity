@@ -3,7 +3,7 @@ use ed25519_dalek::Keypair;
 use indicatif::{HumanDuration, ProgressBar, ProgressState, ProgressStyle};
 use logfather::{Level, Logger};
 use num_format::{Locale, ToFormattedString};
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use rayon::iter::IntoParallelIterator;
 use rust_gpu_tools::{Device, Framework, Program};
 use std::{
     sync::{
