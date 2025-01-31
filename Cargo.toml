@@ -1,36 +1,22 @@
 [package]
 name = "solana_vanity"
-version = "0.3.4"
+version = "0.1.0"
 edition = "2021"
-authors = [
-    "Your Name <your_email@example.com>",
-]
-license = "MIT OR Apache-2.0"
-description = "A *bLaZinGlY fAsT* tool for grinding vanity addresses on Solana"
 
 [features]
-gpu = ["ocl", "cc"]
+gpu = ["cc"]
 default = []
 
-[profile.release]
-lto = "fat"
-codegen-units = 1
-
 [dependencies]
-clap = { version = "4.5.7", features = ["derive"] }
-fd_bs58 = "0.1.0"
-logfather = "0.2.6"
-num-format = "0.4.4"
-rand = "0.8.5"
-rayon = "1.10.0"
-sha2 = "0.10.8"
-solana-pubkey = "2.1.0"
-solana-rpc-client = "2.1.0"
-solana-sdk = "2.1.0"
+clap = { version = "4.5", features = ["derive"] }
+ed25519-dalek = { version = "2.1.1", features = ["rand_core"] }
+rand = "0.8"
+rayon = "1.10"
 bs58 = { version = "0.5", features = ["check"] }
-
-# GPU-related dependencies
-ocl = { version = "0.19", optional = true }
+num-format = "0.4"
+logfather = "0.2.6"
+solana-sdk = "2.1.0"
+solana-rpc-client = "2.1.0"
 
 [build-dependencies]
 cc = { version = "1.0.98", optional = true }
