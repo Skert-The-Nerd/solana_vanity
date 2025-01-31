@@ -4,7 +4,7 @@ fn main() {
     // If the 'gpu' feature is enabled, perform GPU-related build steps
     if cfg!(feature = "gpu") {
         // Link against OpenCL library
-        println!("cargo:rustc-link-lib=OpenCL");
+        println!("cargo:rustc-link-lib=framework=OpenCL");
         
         // If you have custom OpenCL or CUDA code to compile, use the 'cc' crate
         // Example: Compiling an OpenCL kernel written in C
