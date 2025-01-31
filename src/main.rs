@@ -1,9 +1,9 @@
 use clap::Parser;
 use ed25519_dalek::SigningKey;
 use logfather::{Level, Logger};
-use num_format::{Locale, ToFormattedString};
+//use num_format::{Locale, ToFormattedString};//
 use rand::RngCore;
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
+//use rayon::iter::{IntoParallelIterator, ParallelIterator};//
 use std::{
     sync::atomic::{AtomicBool, AtomicU64, Ordering},
     sync::Arc,
