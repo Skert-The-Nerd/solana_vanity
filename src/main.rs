@@ -9,6 +9,9 @@ use std::{
     sync::Arc,
     time::Instant,
     io::{self, Write},
+// use num_format::{Locale, ToFormattedString};  // If unused, remove
+// use std::{ time::Instant, io::{self, Write} };  // Remove if not used
+// use rayon::prelude::*;  // Remove if parallel processing isn’t needed
 };
 
 static EXIT: AtomicBool = AtomicBool::new(false);
