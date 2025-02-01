@@ -1,21 +1,13 @@
 [package]
 name = "solana_vanity"
-version = "0.6.0"
+version = "0.1.0"
 edition = "2021"
-build = "build.rs"
-
-[features]
-cuda = ["rust-gpu-tools/cuda"]
 
 [dependencies]
 clap = { version = "4.5", features = ["derive"] }
-ed25519-dalek = "2.1.1"
-indicatif = "0.17.7"
-logfather = "0.2.6"
+rand = "0.8"
 rayon = "1.10"
-rust-gpu-tools = { version = "0.7", features = ["cuda"] }
-anyhow = "1.0"
 bs58 = "0.4"
-
-[build-dependencies]
-cc = "1.0"
+ed25519-dalek = "2.1.1"
+num-format = "0.4"
+logfather = "0.2.6"
