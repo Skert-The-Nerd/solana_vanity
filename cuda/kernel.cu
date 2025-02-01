@@ -1,7 +1,6 @@
 #include <cstdint>
-#include <cstring>
 
-__global__ void vanity_kernel(
+__global__ void find_vanity(
     const char* target,
     uint8_t* results,
     uint32_t target_len,
@@ -11,22 +10,13 @@ __global__ void vanity_kernel(
     const uint64_t idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx >= num_keys) return;
 
-    // Simplified example - implement actual Ed25519 here
-    // This just matches prefixes as demonstration
-    
-    // Generate random seed (replace with proper crypto)
-    uint8_t seed[32];
+    // Generate random seed (simplified example)
     for(int i = 0; i < 32; i++) {
-        seed[i] = (idx * 31 + i) % 256;
+        seeds[idx*32 + i] = (idx * 31 + i) % 256;
     }
-    
-    // Store seed
-    for(int i = 0; i < 32; i++) {
-        seeds[idx*32 + i] = seed[i];
-    }
-    
-    // Simple pattern check (replace with actual Base58 encoding)
-    results[idx] = (seed[0] == target[0]) ? 1 : 0;
+
+    // Check pattern (replace with actual Base58 check)
+    results[idx] = (seeds[idx*32] == target[0]) ? 1 : 0;
 }
 
 extern "C" {
@@ -40,12 +30,6 @@ extern "C" {
     ) {
         dim3 blocks(256);
         dim3 threads(1024);
-        vanity_kernel<<<blocks, threads, 0, stream>>>(
-            target,
-            results,
-            target_len,
-            num_keys,
-            seeds
-        );
+        find_vanity<<<blocks, threads, 0, stream>>>(target, results, target_len, num_keys, seeds);
     }
 }
