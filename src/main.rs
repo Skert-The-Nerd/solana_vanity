@@ -1,88 +1,141 @@
 use clap::Parser;
 use ed25519_dalek::Keypair;
-use indicatif::{ProgressBar, ProgressStyle};
-use logfather::Logger;
-use rayon::iter::IntoParallelIterator;
-use rust_gpu_tools::{Device, Framework, Program};
-use std::sync::{
-    atomic::{AtomicU64, Ordering},
-    Arc,
+use logfather::{Level, Logger};
+use num_format::{Locale, ToFormattedString};
+use rand::RngCore;
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use std::{
+    sync::atomic::{AtomicBool, AtomicU64, Ordering},
+    time::Instant,
+    io::{self, Write},
 };
-use std::time::Instant;
 
-#[derive(Parser)]
-#[command(name = "Solana Vanity GPU")]
+static EXIT: AtomicBool = AtomicBool::new(false);
+
+#[derive(Debug, Parser)]
+#[command(name = "Solana Vanity Address Generator")]
 struct Args {
+    /// Target prefix to search for (case-sensitive)
     #[arg(short, long)]
     target: String,
-    #[arg(short, long, default_value_t = 4)]
-    gpus: u32,
-    #[arg(short, long, default_value_t = 1_000_000)]
-    batch_size: u64,
+
+    /// Use case-insensitive search
+    #[arg(short, long, default_value_t = false)]
+    case_insensitive: bool,
+
+    /// Number of CPU threads to use
+    #[arg(short, long, default_value_t = 0)]
+    threads: u32,
 }
 
-fn main() -> anyhow::Result<()> {
+fn main() {
     let args = Args::parse();
-    let devices = Device::all(Framework::Cuda)?;
-    let program = Program::from_bytes(include_bytes!("./kernel.cubin"), Framework::Cuda)?;
+    validate_target(&args.target);
+    
+    let mut logger = Logger::new();
+    logger.log_format("[{timestamp} {level}] {message}");
+    logger.timestamp_format("%Y-%m-%d %H:%M:%S");
+    logger.level(Level::Info);
 
-    let pb = ProgressBar::new_spinner();
-    pb.set_style(
-        ProgressStyle::default_bar()
-            .template("{spinner} [{elapsed}] Keys: {pos} ({per_sec})")?
-    );
+    let num_threads = if args.threads == 0 {
+        rayon::current_num_threads() as u32
+    } else {
+        args.threads
+    };
 
-    let start = Instant::now();
-    let total_count = Arc::new(AtomicU64::new(0));
+    println!("╔════════════════════════════════════════════════╗");
+    println!("║          Solana Vanity Address Finder          ║");
+    println!("╠════════════════════════════════════════════════╣");
+    println!("║ Target: {:38} ║", args.target);
+    println!("║ Threads: {:36} ║", num_threads);
+    println!("║ Case-sensitive: {:31} ║", !args.case_insensitive);
+    println!("╚════════════════════════════════════════════════╝\n");
 
-    'search: loop {
-        let mut handles = vec![];
-        for device in &devices[..args.gpus as usize] {
-            let device = device.clone();
-            let program = program.clone();
-            let target = args.target.as_bytes().to_vec();
-            let batch_size = args.batch_size;
-            let total_count = Arc::clone(&total_count);
+    grind(args);
+}
+
+fn grind(args: Args) {
+    let total_count = AtomicU64::new(0);
+    let start_time = Instant::now();
+
+    (0..args.threads).into_par_iter().for_each(|_| {
+        let mut rng = rand::thread_rng();
+        let mut count = 0_u64;
+        let mut buffer = [0u8; 32];
+
+        loop {
+            if EXIT.load(Ordering::Acquire) {
+                return;
+            }
+
+            // Generate random seed
+            rng.fill_bytes(&mut buffer);
             
-            handles.push(std::thread::spawn(move || -> anyhow::Result<()> {
-                let mut seeds = vec![0u8; (batch_size * 32) as usize];
-                let mut results = vec![0u8; batch_size as usize];
+            // Create keypair from seed
+            let keypair = match Keypair::from_bytes(&buffer) {
+                Ok(k) => k,
+                Err(_) => continue,
+            };
 
-                device.execute(
-                    &program,
-                    &[&target, &results, &(target.len() as u32).to_ne_bytes(), &batch_size.to_ne_bytes(), &seeds],
-                    batch_size as usize,
-                )?;
+            // Get base58 public key
+            let pubkey = bs58::encode(keypair.public.to_bytes()).into_string();
+            let check_pubkey = if args.case_insensitive {
+                pubkey.to_lowercase()
+            } else {
+                pubkey.clone()
+            };
 
-                for i in 0..batch_size {
-                    if results[i as usize] == 1 {
-                        let seed = &seeds[(i*32) as usize..(i+1)*32 as usize];
-                        let keypair = Keypair::from_bytes(seed)?;
-                        let pubkey = bs58::encode(keypair.public.to_bytes()).into_string();
-                        if pubkey.starts_with(&args.target) {
-                            println!("\nFound: {}", pubkey);
-                            println!("Seed: {}", bs58::encode(seed));
-                            break 'search;
-                        }
-                    }
-                }
+            // Update counters
+            count += 1;
+            total_count.fetch_add(1, Ordering::Relaxed);
+
+            // Update progress every 1M attempts
+            if count % 1_000_000 == 0 {
+                let elapsed = start_time.elapsed().as_secs_f64();
+                let cps = total_count.load(Ordering::Relaxed) as f64 / elapsed;
+                let remaining = 58f64.powf(args.target.len() as f64) / cps;
                 
-                total_count.fetch_add(batch_size, Ordering::Relaxed);
-                pb.set_position(total_count.load(Ordering::Relaxed));
-                pb.set_message(format!(
-                    "{:.2}M keys/s", 
-                    total_count.load(Ordering::Relaxed) as f64 / start.elapsed().as_secs_f64() / 1_000_000.0
-                ));
+                print!(
+                    "\rChecked: {} | Speed: {:>8.1} CPS | ETA: {:>6.1}h ",
+                    total_count.load(Ordering::Relaxed).to_formatted_string(&Locale::en),
+                    cps,
+                    remaining / 3600.0
+                );
+                io::stdout().flush().unwrap();
+            }
+
+            // Check for match
+            if check_pubkey.starts_with(&args.target) {
+                EXIT.store(true, Ordering::Release);
                 
-                Ok(())
-            }));
+                println!("\n\n╔════════════════════════════════════════════════╗");
+                println!("║               MATCH FOUND!               ║");
+                println!("╠══════════════════════════════════════════╣");
+                println!("║ Public Address: {:25} ║", pubkey);
+                println!("║ Private Seed: {:27} ║", bs58::encode(buffer).into_string());
+                println!("╚══════════════════════════════════════════╝");
+                return;
+            }
         }
+    });
 
-        for handle in handles {
-            handle.join().unwrap()?;
+    println!(
+        "\nFinished. Total checked: {} in {:.2} seconds",
+        total_count.load(Ordering::Relaxed).to_formatted_string(&Locale::en),
+        start_time.elapsed().as_secs_f64()
+    );
+}
+
+fn validate_target(target: &str) {
+    let valid_chars = bs58::alphabet::BITCOIN.chars().collect::<Vec<_>>();
+    
+    for c in target.chars() {
+        if !valid_chars.contains(&c) {
+            panic!("Invalid character '{}' in target. Only Base58 characters allowed.", c);
         }
     }
-
-    pb.finish_with_message("Done!");
-    Ok(())
+    
+    if target.len() < 3 {
+        panic!("Target must be at least 3 characters long");
+    }
 }
