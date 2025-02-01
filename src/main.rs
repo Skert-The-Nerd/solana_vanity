@@ -1,5 +1,5 @@
 use clap::Parser;
-use ed25519_dalek::Keypair;
+use ed25519_dalek::SigningKey;
 use logfather::{Level, Logger};
 use num_format::{Locale, ToFormattedString};
 use rand::RngCore;
@@ -71,14 +71,11 @@ fn grind(args: Args) {
             // Generate random seed
             rng.fill_bytes(&mut buffer);
             
-            // Create keypair from seed
-            let keypair = match Keypair::from_bytes(&buffer) {
-                Ok(k) => k,
-                Err(_) => continue,
-            };
+            // Create signing key
+            let signing_key = SigningKey::from_bytes(&buffer);
 
             // Get base58 public key
-            let pubkey = bs58::encode(keypair.public.to_bytes()).into_string();
+            let pubkey = bs58::encode(signing_key.verifying_key().as_bytes()).into_string();
             let check_pubkey = if args.case_insensitive {
                 pubkey.to_lowercase()
             } else {
@@ -127,7 +124,10 @@ fn grind(args: Args) {
 }
 
 fn validate_target(target: &str) {
-    let valid_chars = bs58::alphabet::BITCOIN.chars().collect::<Vec<_>>();
+    // Create a vector of valid Base58 characters
+    let valid_chars: Vec<char> = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+        .chars()
+        .collect();
     
     for c in target.chars() {
         if !valid_chars.contains(&c) {
