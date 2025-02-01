@@ -120,9 +120,9 @@ fn grind(args: Args) -> anyhow::Result<()> {
                     
                     total_count.fetch_add(1, Ordering::Relaxed);
                     pb.set_message(format!(
-                        "Checked: {} | Speed: {}/sec", 
+                        "Checked: {} | Speed: {:.2}/sec", 
                         total_count.load(Ordering::Relaxed).to_formatted_string(&Locale::en),
-                        (total_count.load(Ordering::Relaxed) as f64 / start_time.elapsed().as_secs_f64()).to_formatted_string(&Locale::en)
+                        total_count.load(Ordering::Relaxed) as f64 / start_time.elapsed().as_secs_f64()
                     ));
                 }
                 
