@@ -1,12 +1,11 @@
 fn main() {
-    if cfg!(feature = "cuda") {
+    #[cfg(feature = "cuda")]
+    {
         cc::Build::new()
             .cuda(true)
-            .flag("-arch=sm_86")
+            .flag("-arch=sm_86") // For RTX 3090
             .file("cuda/kernel.cu")
             .compile("kernel");
-        
         println!("cargo:rerun-if-changed=cuda/kernel.cu");
     }
-    println!("cargo:rerun-if-changed=build.rs");
 }
