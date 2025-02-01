@@ -2,8 +2,13 @@ use clap::Parser;
 use ed25519_dalek::Keypair;
 use indicatif::{ProgressBar, ProgressStyle};
 use logfather::Logger;
+use num_format::{Locale, ToFormattedString};
+use rayon::iter::IntoParallelIterator; // Fixed import
 use rust_gpu_tools::{Device, Framework, Program};
-use std::sync::Arc;
+use std::sync::{
+    atomic::{AtomicU64, Ordering},
+    Arc,
+};
 use std::time::Instant;
 
 #[derive(Parser)]
@@ -23,11 +28,13 @@ fn main() -> anyhow::Result<()> {
     let program = Program::from_bytes(include_bytes!("./kernel.cubin"), Framework::Cuda)?;
 
     let pb = ProgressBar::new_spinner();
-    pb.set_style(ProgressStyle::default_bar()
-        .template("{spinner} [{elapsed}] Keys: {pos} ({per_sec})")?);
+    pb.set_style(
+        ProgressStyle::default_bar()
+            .template("{spinner} [{elapsed}] Keys: {pos} ({per_sec})")?
+    );
 
     let start = Instant::now();
-    let mut count = 0u64;
+    let total_count = Arc::new(AtomicU64::new(0));
 
     'search: loop {
         let mut handles = vec![];
@@ -36,6 +43,7 @@ fn main() -> anyhow::Result<()> {
             let program = program.clone();
             let target = args.target.as_bytes().to_vec();
             let batch_size = args.batch_size;
+            let total_count = Arc::clone(&total_count);
             
             handles.push(std::thread::spawn(move || -> anyhow::Result<()> {
                 let mut seeds = vec![0u8; (batch_size * 32) as usize];
@@ -59,15 +67,20 @@ fn main() -> anyhow::Result<()> {
                         }
                     }
                 }
+                
+                total_count.fetch_add(batch_size, Ordering::Relaxed);
+                pb.set_position(total_count.load(Ordering::Relaxed));
+                pb.set_message(format!(
+                    "{:.2}M keys/s", 
+                    total_count.load(Ordering::Relaxed) as f64 / start.elapsed().as_secs_f64() / 1_000_000.0
+                ));
+                
                 Ok(())
             }));
         }
 
         for handle in handles {
             handle.join().unwrap()?;
-            count += args.batch_size;
-            pb.set_position(count);
-            pb.set_message(format!("{:.2}M keys/s", count as f64 / start.elapsed().as_secs_f64() / 1_000_000.0));
         }
     }
 
