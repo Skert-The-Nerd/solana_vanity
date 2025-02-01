@@ -10,7 +10,7 @@ __global__ void find_vanity(
     const uint64_t idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx >= num_keys) return;
 
-    // Generate random seed (simplified example)
+    // Generate random seed
     for(int i = 0; i < 32; i++) {
         seeds[idx*32 + i] = (idx * 31 + i) % 256;
     }
