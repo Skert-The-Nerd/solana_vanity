@@ -1,11 +1,9 @@
 use std::sync::{Arc, Mutex};
-use std::thread;
 use std::time::Instant;
-use num_format::{Locale, ToFormattedString};
 use rayon::prelude::*;
 use solana_sdk::pubkey::Pubkey;
-use rand::Rng;
 use solana_sdk::signature::{Keypair, Signer};
+use rand::Rng;
 
 const TARGET_PREFIX: &str = "Van1"; // Change this to your desired prefix
 
@@ -47,7 +45,7 @@ fn main() {
     if let Some(Some((pubkey_str, _))) = result {
         let elapsed_time = start_time.elapsed().as_secs_f64();
         
-        // Fix: Format as a string instead of using `to_formatted_string`
+        // ✅ Fix: Format `f64` properly as a string
         let formatted_time = format!("{:.2}", elapsed_time); 
 
         println!("✅ Found matching address: {}", pubkey_str);
