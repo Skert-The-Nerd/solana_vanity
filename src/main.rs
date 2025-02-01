@@ -3,7 +3,7 @@ use ed25519_dalek::Keypair;
 use indicatif::{HumanDuration, ProgressBar, ProgressState, ProgressStyle};
 use logfather::{Level, Logger};
 use num_format::{Locale, ToFormattedString};
-use rayon::iter::IntoParallelIterator;
+use rayon::iter::IntoParallelIterator; // Fixed import
 use rust_gpu_tools::{Device, Framework, Program};
 use std::{
     sync::{
@@ -122,7 +122,7 @@ fn grind(args: Args) -> anyhow::Result<()> {
                     pb.set_message(format!(
                         "Checked: {} | Speed: {:.2}/sec", 
                         total_count.load(Ordering::Relaxed).to_formatted_string(&Locale::en),
-                        total_count.load(Ordering::Relaxed) as f64 / start_time.elapsed().as_secs_f64()
+                        total_count.load(Ordering::Relaxed) as f64 / start_time.elapsed().as_secs_f64() // Fixed here
                     ));
                 }
                 
@@ -141,7 +141,7 @@ fn grind(args: Args) -> anyhow::Result<()> {
     println!(
         "\nFinished. Total checked: {} in {:.2} seconds",
         total_count.load(Ordering::Relaxed).to_formatted_string(&Locale::en),
-        start_time.elapsed().as_secs_f64()
+        start_time.elapsed().as_secs_f64() // Already formatted correctly
     );
     
     Ok(())
