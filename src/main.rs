@@ -2,7 +2,7 @@ use clap::Parser;
 use ed25519_dalek::Keypair;
 use indicatif::{ProgressBar, ProgressStyle};
 use logfather::Logger;
-use rayon::iter::IntoParallelIterator; // Fixed import
+use rayon::iter::IntoParallelIterator;
 use rust_gpu_tools::{Device, Framework, Program};
 use std::sync::{
     atomic::{AtomicU64, Ordering},
