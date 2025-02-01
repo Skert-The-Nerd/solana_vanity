@@ -2,7 +2,6 @@ use clap::Parser;
 use ed25519_dalek::Keypair;
 use indicatif::{ProgressBar, ProgressStyle};
 use logfather::Logger;
-use num_format::{Locale, ToFormattedString};
 use rayon::iter::IntoParallelIterator; // Fixed import
 use rust_gpu_tools::{Device, Framework, Program};
 use std::sync::{
