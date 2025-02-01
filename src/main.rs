@@ -4,13 +4,12 @@ use std::time::Instant;
 use num_format::{Locale, ToFormattedString};
 use rayon::prelude::*;
 use solana_sdk::pubkey::Pubkey;
+use rand::Rng;
+use solana_sdk::signature::{Keypair, Signer};
 
 const TARGET_PREFIX: &str = "Van1"; // Change this to your desired prefix
 
 fn generate_random_keypair() -> (String, Pubkey) {
-    use rand::Rng;
-    use solana_sdk::signature::{Keypair, Signer};
-
     let keypair = Keypair::new();
     let pubkey_str = keypair.pubkey().to_string();
     (pubkey_str, keypair.pubkey())
@@ -23,7 +22,7 @@ fn main() {
     println!("Starting Solana Vanity Address Finder...");
     println!("Looking for addresses starting with: {}", TARGET_PREFIX);
 
-    let result = (0..num_cpus::get()) // Use available CPU cores
+    let result = (0..num_cpus::get()) // Use all available CPU cores
         .into_par_iter() // Use Rayon for parallel execution
         .map(|_| {
             loop {
@@ -46,8 +45,10 @@ fn main() {
         .find_any(|res| res.is_some());
 
     if let Some(Some((pubkey_str, _))) = result {
-        let elapsed = start_time.elapsed().as_secs_f64();
-        let formatted_time = format!("{:.2}", elapsed); // Keep decimal places
+        let elapsed_time = start_time.elapsed().as_secs_f64();
+        
+        // Fix: Format as a string instead of using `to_formatted_string`
+        let formatted_time = format!("{:.2}", elapsed_time); 
 
         println!("✅ Found matching address: {}", pubkey_str);
         println!("⏱️ Time elapsed: {} seconds", formatted_time);
