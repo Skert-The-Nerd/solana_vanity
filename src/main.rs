@@ -45,8 +45,8 @@ fn main() {
     if let Some(Some((pubkey_str, _))) = result {
         let elapsed_time = start_time.elapsed().as_secs_f64();
         
-        // ✅ Fix: Format `f64` properly as a string
-        let formatted_time = format!("{:.2}", elapsed_time); 
+        // ✅ FIX: Correctly format f64 as a string
+        let formatted_time = format!("{:.2}", elapsed_time);
 
         println!("✅ Found matching address: {}", pubkey_str);
         println!("⏱️ Time elapsed: {} seconds", formatted_time);
