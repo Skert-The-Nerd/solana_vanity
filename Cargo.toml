@@ -1,3 +1,9 @@
+To resolve the error related to the ed25519_dalek crate, I'll provide the full and complete main.rs and Cargo.toml files.
+
+Cargo.toml
+Ensure that your Cargo.toml file includes the correct dependencies and structure. Here is the full content:
+
+TOML
 [package]
 name = "solana_vanity"
 version = "0.1.0"
